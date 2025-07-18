@@ -88,6 +88,7 @@ TypedArray<Dictionary> AndroidXREditorExportPlugin::_get_export_options(const Re
 	export_options.append(_eye_tracking_option);
 	export_options.append(_hand_tracking_option);
 	export_options.append(_tracked_controllers_option);
+	export_options.append(_recommended_boundary_type_option);
 
 	return export_options;
 }
@@ -182,6 +183,18 @@ String AndroidXREditorExportPlugin::_get_android_manifest_activity_element_conte
 					android:value="XR_ACTIVITY_START_MODE_FULL_SPACE_UNMANAGED" />
 )";
 
+	int recommended_boundary_type_option = _get_int_option("android_xr_features/recommended_boundary_type", RECOMMENDED_BOUNDARY_TYPE_NONE_VALUE);
+	if (recommended_boundary_type_option == RECOMMENDED_BOUNDARY_TYPE_LARGE_VALUE) {
+		contents += "    <property\n"
+					"           android:name=\"android.window.PROPERTY_XR_BOUNDARY_TYPE_RECOMMENDED\"\n"
+					"           android:value=\"XR_BOUNDARY_TYPE_LARGE\" />\n";
+	} else {
+		contents += "    <property\n"
+					"           android:name=\"android.window.PROPERTY_XR_BOUNDARY_TYPE_RECOMMENDED\"\n"
+					"           android:value=\"XR_BOUNDARY_TYPE_NO_RECOMMENDATION\" />\n";
+	}
+
+
 	return contents;
 }
 
@@ -219,6 +232,8 @@ String AndroidXREditorExportPlugin::_get_android_manifest_element_contents(const
 		return contents;
 	}
 
+	contents += "    <uses-feature android:name=\"android.software.xr.api.openxr\" android:required=\"true\" />\n";
+
 	// Android XR required
 	bool android_xr_required = _get_hybrid_app_launch_mode() != OpenXRHybridApp::HYBRID_MODE_PANEL;
 	contents += vformat("    <uses-feature android:name=\"android.software.xr.immersive\" android:required=\"%s\" />\n", _bool_to_string(android_xr_required));
@@ -228,17 +243,6 @@ String AndroidXREditorExportPlugin::_get_android_manifest_element_contents(const
 		// 6DoF motion controllers
 		bool required = tracked_controllers_option == TRACKED_CONTROLLERS_REQUIRED_VALUE;
 		contents += vformat("    <uses-feature android:name=\"android.hardware.xr.input.controller\" android:required=\"%s\" />\n", _bool_to_string(required));
-	}
-
-	int recommended_boundary_type_option = _get_int_option("android_xr_features/recommended_boundary_type", RECOMMENDED_BOUNDARY_TYPE_NONE_VALUE);
-	if (recommended_boundary_type_option == RECOMMENDED_BOUNDARY_TYPE_LARGE_VALUE) {
-		contents += "    <property\n"
-					"           android:name=\"android.window.PROPERTY_XR_BOUNDARY_TYPE_RECOMMENDED\"\n"
-					"           android:value=\"XR_BOUNDARY_TYPE_LARGE\" />\n";
-	} else {
-		contents += "    <property\n"
-					"           android:name=\"android.window.PROPERTY_XR_BOUNDARY_TYPE_RECOMMENDED\"\n"
-					"           android:value=\"XR_BOUNDARY_TYPE_NO_RECOMMENDATION\" />\n";
 	}
 
 	ProjectSettings *project_settings = ProjectSettings::get_singleton();
@@ -269,7 +273,7 @@ String AndroidXREditorExportPlugin::_get_android_manifest_element_contents(const
 
 	// Check for spatial entities
 	if ((bool)project_settings->get_setting_with_override("xr/openxr/extensions/spatial_entity/enabled")) {
-		contents += "	<uses-permission android:name=\"android.permission.SCENE_UNDERSTANDING_FINE\" />\n";
+		contents += "	<uses-permission android:name=\"android.permission.SCENE_UNDERSTANDING_COARSE\" />\n";
 	}
 
 	return contents;

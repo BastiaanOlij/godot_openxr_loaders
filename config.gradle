@@ -10,7 +10,7 @@ ext {
             ndkVersion              : '23.2.8568313',
             // Note that 'plugin/src/main/AndroidManifest.xml' should be updated with content
             // from the Khronos OpenXR loader manifest.
-            openxrVersion           : '1.0.34',
+            openxrVersion           : '1.1.49',
             fragmentVersion         : '1.7.1',
             splashscreenVersion     : '1.0.1',
     ]
